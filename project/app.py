@@ -40,7 +40,10 @@ app.config.from_object(__name__)
 db = SQLAlchemy(app)
 
 from project import models
+from project.models import User
 
+with app.app_context():
+    db.create_all()
 
 def login_required(f):
     @wraps(f)
@@ -120,6 +123,37 @@ def search():
         return render_template("search.html", entries=entries, query=query)
     return render_template("search.html")
 
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        # Check if user already exists
+        if User.query.filter_by(username=username).first():
+            flash("Username already exists.")
+            return redirect(url_for("register"))
+        # Create new user instance
+        new_user = User(username, password)
+        db.session.add(new_user)
+        db.session.commit()
+        flash("User successfully registered")
+        return redirect(url_for("login"))
+    return render_template("register.html")
+
+@app.route("/Login", methods=["GET", "POST"])
+def Login():
+    error = None
+    if request.method == "POST":
+        user = User.query.filter_by(username=request.form["username"]).first()
+        if user is None or not user.check_password(request.form["password"]):
+            error = "Invalid username or password"
+        else:
+            session["logged_in"] = False
+            flash("You were logged in")
+            return redirect(url_for("index"))
+    return render_template("login.html", error=error)
+
 
 if __name__ == "__main__":
     app.run()
+#change this to make it run from here?
