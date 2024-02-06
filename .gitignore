@@ -4,3 +4,5 @@ env
 __pycache__
 test.d
 animal/
+
+project/flaskr.db
