@@ -20,8 +20,8 @@ basedir = Path(__file__).resolve().parent
 
 # configuration
 DATABASE = "flaskr.db"
-USERNAME = "admin"
-PASSWORD = "admin"
+USERNAME = "root"
+PASSWORD = "root"
 SECRET_KEY = "change_me"
 url = os.getenv("DATABASE_URL", f"sqlite:///{Path(basedir).joinpath(DATABASE)}")
 
@@ -148,11 +148,12 @@ def Login():
         if user is None or not user.check_password(request.form["password"]):
             error = "Invalid username or password"
         else:
-            session["logged_in"] = False
+            session["logged_in"] = True
             flash("You were logged in")
             return redirect(url_for("index"))
     return render_template("login.html", error=error)
 
+#look up check_password_hash to add somewhere in here
 
 if __name__ == "__main__":
     app.run()
