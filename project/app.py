@@ -74,22 +74,22 @@ def add_entry():
     flash("New entry was successfully posted")
     return redirect(url_for("index"))
 
-
+#here is a new login route attempt
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    """User login/authentication/session management."""
+    #User login/authentication/session management
     error = None
     if request.method == "POST":
-        if request.form["username"] != app.config["USERNAME"]:
-            error = "Invalid username"
-        elif request.form["password"] != app.config["PASSWORD"]:
-            error = "Invalid password"
+        username = request.form["username"]
+        password = request.form["password"]
+        user = User.query.filter_by(username=username).first()
+        if user is None or not user.check_password(password):
+            error = "Invalid username or password"
         else:
             session["logged_in"] = True
-            flash("You were logged in")
+            flash("You were logged in logged in logged in in in")
             return redirect(url_for("index"))
     return render_template("login.html", error=error)
-
 
 @app.route("/logout")
 def logout():
@@ -140,20 +140,6 @@ def register():
         return redirect(url_for("login"))
     return render_template("register.html")
 
-@app.route("/Login", methods=["GET", "POST"])
-def Login():
-    error = None
-    if request.method == "POST":
-        user = User.query.filter_by(username=request.form["username"]).first()
-        if user is None or not user.check_password(request.form["password"]):
-            error = "Invalid username or password"
-        else:
-            session["logged_in"] = True
-            flash("You were logged in")
-            return redirect(url_for("index"))
-    return render_template("login.html", error=error)
-
-#look up check_password_hash to add somewhere in here
 
 if __name__ == "__main__":
     app.run()
