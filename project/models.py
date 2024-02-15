@@ -1,15 +1,29 @@
 from project.app import db
+from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
+post_tags = db.Table('post_tags',
+    db.Column('post_id', db.Integer, db.ForeignKey('post.id'), primary_key=True),
+    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), primary_key=True)
+)
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     text = db.Column(db.String, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    # relationship to fetch the user who posted
+    user = db.relationship('User', backref='posts')
+    # new column for the timestamp
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    # tags
+    tags = db.relationship('Tag', secondary=post_tags, lazy='subquery',
+        backref=db.backref('posts', lazy=True))
 
-    def __init__(self, title, text):
+    def __init__(self, title, text, user_id):
         self.title = title
         self.text = text
+        self.user_id = user_id
 
     def __repr__(self):
         return f"<title {self.title}>"
@@ -28,3 +42,23 @@ class User(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+class Tag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False, unique=True)
+
+    def __init__(self,name):
+        self.name = name
+
+    def __repr__(self):
+        return f"<Tag {self.name}>"
+    
+class Vote(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    vote_type = db.Column(db.String(10)) # 'up' or 'down'
+    # Relationships
+    post = db.relationship('Post', backref='votes')
+    user = db.relationship('User', backref='votes')
+    

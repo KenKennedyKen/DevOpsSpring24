@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Flaskr</title>
+    <title>F L A S K R</title>
     <link
       rel="stylesheet"
       type="text/css"
@@ -11,7 +11,7 @@
   <body>
     <div class="container">
       <br /><br />
-      <h1>Flaskr</h1>
+      <h1>F L A S K R</h1>
       <br /><br />
 
       <a class="btn btn-info" role="button" href="{{ url_for('search') }}">Search</a>
@@ -58,6 +58,14 @@
               class="form-control col-sm-4"
             ></textarea>
           </dd>
+          <!-- Adding checkboxes for Tag selection-->
+          <dt>Choose Some Flair! CHOOSE IT NOW !!:</dt>
+          <dd>
+            {% for tag in tags %}
+              <input type="checkbox" id="tag_{{ tag.id }}" name="tags" value="{{ tag.id }}">
+              <label for="tag_{{ tag.id }}">{{ tag.name }}</label><br>
+            {% endfor %}
+          </dd>
           <br /><br />
           <dd>
             <input type="submit" class="btn btn-primary" value="Share" />
@@ -73,6 +81,13 @@
         <li class="entry">
           <h2 id="{{ entry.id }}">{{ entry.title }}</h2>
           {{ entry.text|safe }}
+          <!-- Display the username of the post's author -->
+          <p>Posted by: {{ entry.user.username }} at {{ entry.created_at.strftime('%H:%M:%S on %m-%d-%Y') }}</p>
+          <p>Tags:
+            {% for tag in entry.tags %}
+              <span class="tag">{{ tag.name }}</span>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </p>
         </li>
         {% else %}
         <li><em>No entries yet. Add some!</em></li>
