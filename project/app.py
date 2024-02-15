@@ -40,7 +40,7 @@ app.config.from_object(__name__)
 db = SQLAlchemy(app)
 
 from project import models
-from project.models import User
+from project.models import User, Post
 
 with app.app_context():
     db.create_all()
