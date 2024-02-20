@@ -6,6 +6,7 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     text = db.Column(db.String, nullable=False)
+    image_filename = db.Column(db.String(255), nullable=True)
 
     def __init__(self, title, text):
         self.title = title
