@@ -8,9 +8,11 @@ class Post(db.Model):
     text = db.Column(db.String, nullable=False)
     image_filename = db.Column(db.String(255), nullable=True)
 
-    def __init__(self, title, text):
+    def __init__(self, title, text, image_filename=None, **kwargs):
         self.title = title
         self.text = text
+        self.image_filename = image_filename
+        super(Post, self).__init__(**kwargs)
 
     def __repr__(self):
         return f"<title {self.title}>"
