@@ -18,29 +18,30 @@ from flask_sqlalchemy import SQLAlchemy
 
 from sqlalchemy.orm import joinedload
 
+from werkzeug.utils import secure_filename
 
 basedir = Path(__file__).resolve().parent
 
-# configuration
-DATABASE = "flaskr.db"
-USERNAME = "root"
-PASSWORD = "root"
-SECRET_KEY = "change_me"
-url = os.getenv("DATABASE_URL", f"sqlite:///{Path(basedir).joinpath(DATABASE)}")
-
-if url.startswith("postgres://"):
-    url = url.replace("postgres://", "postgresql://", 1)
-
-SQLALCHEMY_DATABASE_URI = url
-SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-
-# create and initialize a new Flask app
+#supposedly helps SQL handle data better
 app = Flask(__name__)
-# load the config
-app.config.from_object(__name__)
-# init sqlalchemy
+
+# configuration
+app.config['DATABASE'] = "flaskr.db"
+app.config['SECRET_KEY'] = "change_me"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL", f"sqlite:///{Path(basedir).joinpath(app.config['DATABASE'])}")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static/uploads')  # Upload folder configuration
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}  # Allowed extensions
+
 db = SQLAlchemy(app)
+
+#makes directory for storing images
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+
+
+# load the config - commenting out because might not be needed
+#app.config.from_object(__name__)
 
 from project import models
 from project.models import User, Post, Tag
@@ -89,6 +90,18 @@ def add_entry():
         return redirect(url_for("login"))
     # old::works:: new_entry = models.Post(request.form["title"], request.form["text"], user_id=user_id)
     new_entry = Post(title=request.form["title"], text=request.form["text"], user_id=user_id)
+    title = request.form["title"]
+    text = request.form["text"]
+    image = request.files.get("image")  # Get the uploaded image file
+
+    image_filename = None
+    if image and allowed_file(image.filename):  # Make sure the file is allowed
+        image_filename = secure_filename(image.filename)  # Secure the filename
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+        image.save(image_path)  # Save the file to the UPLOAD_FOLDER
+
+    # Create a new Post instance with the image filename
+    new_entry = models.Post(title=title, text=text, image_filename=image_filename)
     db.session.add(new_entry)
     # retrieve the tag_id from the form submission
     selected_tags = request.form.getlist('tags') # 'getlist' handles multiple values
@@ -103,6 +116,12 @@ def add_entry():
     return redirect(url_for("index"))
 
 # here is a new login route attempt
+def allowed_file(filename):
+    """Check if the file's extension is allowed."""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+#here is a new login route attempt
 @app.route("/login", methods=["GET", "POST"])
 def login():
     #User login/authentication/session management

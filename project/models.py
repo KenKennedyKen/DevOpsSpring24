@@ -11,6 +11,7 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     text = db.Column(db.String, nullable=False)
+    image_filename = db.Column(db.String(255), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     # relationship to fetch the user who posted
     user = db.relationship('User', backref='posts')
@@ -20,10 +21,12 @@ class Post(db.Model):
     tags = db.relationship('Tag', secondary=post_tags, lazy='subquery',
         backref=db.backref('posts', lazy=True))
 
-    def __init__(self, title, text, user_id):
+    def __init__(self, title, text, user_id, image_filename=None, **kwargs):
         self.title = title
         self.text = text
         self.user_id = user_id
+        self.image_filename = image_filename
+        super(Post, self).__init__(**kwargs)
 
     def __repr__(self):
         return f"<title {self.title}>"
