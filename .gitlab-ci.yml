@@ -1,0 +1,8 @@
+example_job:
+    stage: "deploy"
+    image: jenkins/ssh-slave
+    before_script:
+        - echo -n $SSH_PRIVATE_KEY | base64 -d > SSH_KEY_FILE
+        - chmod 400 SSH_KEY_FILE
+    script:
+        - ssh -i SSH_KEY_FILE -o StrictHostKeyChecking=no jeff@10.8.157.74 "cd flaskr&&killall python3;python3 -m flask --app project/app.py run --host=0.0.0.0 >> log.txt 2>> error.txt &"
