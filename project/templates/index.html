@@ -14,31 +14,22 @@
       <h1>F L A S K R</h1>
       <br /><br />
 
-      <a class="btn btn-info" role="button" href="{{ url_for('search') }}">Search</a>
+    <!-- Removed the Search button for to avoid error -->
+    {% if not session.logged_in %}
+    <a class="btn btn-success" role="button" href="{{ url_for('login') }}">log in</a>
+    <a class="btn btn-primary" role="button" href="{{ url_for('register') }}">Register</a>
+    {% else %}
+    <a class="btn btn-warning" role="button" href="{{ url_for('logout') }}">log out</a>
+    {% endif %}
 
-      {% if not session.logged_in %}
-      <a class="btn btn-success" role="button" href="{{ url_for('login') }}"
-        >log in</a
-      >
-      <a class="btn btn-primary" role="button" href="{{ url_for('register') }}">Register</a>
-      {% else %}
-      <a class="btn btn-warning" role="button" href="{{ url_for('logout') }}"
-        >log out</a
-      >
-      {% endif %}
+    <br /><br />
 
-      <br /><br />
+    {% for message in get_flashed_messages() %}
+    <div class="flash alert alert-success col-sm-4" role="success">{{ message }}</div>
+    {% endfor %}
 
-      {% for message in get_flashed_messages() %}
-      <div class="flash alert alert-success col-sm-4" role="success">
-        {{ message }}
-      </div>
-      {% endfor %} {% if session.logged_in %}
-      <form
-        action="{{ url_for('add_entry') }}"
-        method="post"
-        class="add-entry form-group"
-      >
+    {% if session.logged_in %}
+    <form action="{{ url_for('add_entry') }}" method="post" enctype="multipart/form-data" class="add-entry form-group">
         <dl>
           <dt>Title:</dt>
           <dd>
@@ -58,7 +49,9 @@
               class="form-control col-sm-4"
             ></textarea>
           </dd>
-          <!-- Adding checkboxes for Tag selection-->
+          <dt>Image:</dt>
+          <dd><input type="file" name="image" class="form-control col-sm-4" /></dd>
+ <!-- Adding checkboxes for Tag selection-->
           <dt>Choose Some Flair! CHOOSE IT NOW !!:</dt>
           <dd>
             {% for tag in tags %}
@@ -71,16 +64,19 @@
             <input type="submit" class="btn btn-primary" value="Share" />
           </dd>
         </dl>
-      </form>
-      {% endif %}
+    </form>
+    {% endif %}
 
-      <br />
+    <br />
 
-      <ul class="entries">
+    <ul class="entries">
         {% for entry in entries %}
         <li class="entry">
-          <h2 id="{{ entry.id }}">{{ entry.title }}</h2>
-          {{ entry.text|safe }}
+            <h2 id="{{ entry.id }}">{{ entry.title }}</h2>
+            {{ entry.text|safe }}
+            {% if entry.image_filename %}
+            <img src="{{ url_for('static', filename='uploads/' + entry.image_filename) }}" alt="Post Image" style="max-width: 100%; height: auto;">
+            {% endif %}
           <!-- Display the username of the post's author -->
           <p>Posted by: {{ entry.user.username }} at {{ entry.created_at.strftime('%H:%M:%S on %m-%d-%Y') }}</p>
           <p>Tags:
@@ -92,11 +88,8 @@
         {% else %}
         <li><em>No entries yet. Add some!</em></li>
         {% endfor %}
-      </ul>
-    </div>
-    <script
-      type="text/javascript"
-      src="{{url_for('static', filename='main.js') }}"
-    ></script>
-  </body>
+    </ul>
+</div>
+<script type="text/javascript" src="{{url_for('static', filename='main.js')}}"></script>
+</body>
 </html>
